@@ -164,6 +164,11 @@ namespace YARG.Gameplay.Player
 
         protected int NoteIndex { get; private set; }
 
+        // StreamLink: the notes the engine plays (upcoming ones are changed in place),
+        // and the index of the next note to spawn (everything before it is already on the highway)
+        public List<TNote> LiveNotes => Notes;
+        public int SpawnIndex => NoteIndex;
+
         public InstrumentDifficulty<TNote> NoteTrack { get; private set; }
 
         private InstrumentDifficulty<TNote> OriginalNoteTrack { get; set; }

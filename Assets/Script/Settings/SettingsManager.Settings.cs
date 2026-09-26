@@ -601,6 +601,27 @@ namespace YARG.Settings
             public CustomCharacterSetting CustomVocalsCharacter { get; } = new(string.Empty, VenueCharacter.CharacterType.Vocals, CustomCharacterCallback);
             #endregion
 
+            #region StreamLink
+
+            public ToggleSetting StreamMode { get; } = new(true);
+            public IPv4Setting StreamLinkHost { get; } = new("127.0.0.1", _ => StreamLinkConnectionCallback());
+            public IntSetting StreamLinkPort { get; } = new(8080, 1, 65535, _ => StreamLinkConnectionCallback());
+            // Not shown in the menu (there is no text field setting type); edit settings.json to set it
+            public HiddenTextSetting StreamLinkPassword { get; } = new("", _ => StreamLinkConnectionCallback());
+            public IntSetting StreamEffectDuration { get; } = new(20, 5, 120);
+
+            private static void StreamLinkConnectionCallback()
+            {
+                if (!IsInitialized)
+                {
+                    return;
+                }
+
+                YARG.StreamLink.StreamLinkService.Instance?.RestartClient();
+            }
+
+            #endregion
+
             #region Helpers
             private static void ResetChannelSetting(OutputChannelSetting channelSetting, SongStem stem, int defaultValue = -1)
             {

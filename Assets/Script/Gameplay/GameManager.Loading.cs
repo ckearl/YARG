@@ -270,6 +270,8 @@ namespace YARG.Gameplay
             enabled = true;
             IsSongStarted = true;
             _songStarted?.Invoke();
+
+            StreamLink.StreamLinkService.Instance?.OnSongStart(this);
         }
 
         private void ApplySampleNormalization()

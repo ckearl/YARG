@@ -70,6 +70,12 @@ namespace YARG.Settings
                 nameof(Settings.WrapAroundNavigation),
                 nameof(Settings.DiscordRichPresence),
                 new FieldMetadata(nameof(Settings.AmIAwesome), isAdvanced: true),
+
+                new HeaderMetadata("StreamLink"),
+                nameof(Settings.StreamMode),
+                nameof(Settings.StreamLinkHost),
+                nameof(Settings.StreamLinkPort),
+                nameof(Settings.StreamEffectDuration),
             },
             new SongManagerTab("SongManager", icon: "Songs")
             {

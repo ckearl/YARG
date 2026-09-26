@@ -224,6 +224,8 @@ namespace YARG.Gameplay
         {
             YargLogger.LogInfo("Exiting song");
 
+            StreamLink.StreamLinkService.Instance?.OnSongEnd(this);
+
             if (Navigator.Instance != null)
             {
                 Navigator.Instance.NavigationEvent -= OnNavigationEvent;
@@ -289,6 +291,9 @@ namespace YARG.Gameplay
             _songRunner.Update();
             BeatEventHandler.Update(_songRunner.SongTime, _songRunner.VisualTime);
             CrowdEventHandler.Update(_songRunner.SongTime);
+
+            // Apply viewer commands before the players update, so upcoming notes are rebuilt before they spawn
+            StreamLink.StreamLinkService.Instance?.GameplayTick(this);
 
             // Update players
             int totalScore = 0;
@@ -404,6 +409,7 @@ namespace YARG.Gameplay
             Time.timeScale = 0f;
             BackgroundManager.SetPaused(true);
             GameStateFetcher.SetPaused(true);
+            StreamLink.StreamLinkService.Instance?.OnPauseChanged(this, true);
 
             // This uses the raw input update time because it keeps running during the pause
             // allowing us to accurately calculate the length of the pause later
@@ -528,6 +534,7 @@ namespace YARG.Gameplay
             Time.timeScale = 1f;
             BackgroundManager.SetPaused(false);
             GameStateFetcher.SetPaused(false);
+            StreamLink.StreamLinkService.Instance?.OnPauseChanged(this, false);
 
             // Unpause any audio samples that are currently playing
             GlobalAudioHandler.ResumeAllSfx();
@@ -640,6 +647,12 @@ namespace YARG.Gameplay
 
         private void RecordScores(ReplayInfo replayInfo)
         {
+            // Viewer effects change the chart mid-song, so stream mode scores aren't comparable
+            if (StreamLink.StreamLinkService.IsStreamModeActive(this))
+            {
+                return;
+            }
+
             if (!ScoreContainer.IsBandScoreValid(SongSpeed))
             {
                 return;
@@ -789,7 +802,8 @@ namespace YARG.Gameplay
         public ReplayInfo? SaveReplay(double length, string directory)
 #nullable disable
         {
-            if (_isReplaySaved)
+            // Mid-song chart and speed changes aren't recorded, so a stream mode replay would play back wrong
+            if (_isReplaySaved || StreamLink.StreamLinkService.IsStreamModeActive(this))
             {
                 return null;
             }

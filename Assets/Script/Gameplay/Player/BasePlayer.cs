@@ -43,6 +43,13 @@ namespace YARG.Gameplay.Player
                     return noteSpeed;
                 }
 
+                // Stream mode changes song speed mid-song. Keeping note speed fixed in song time means notes
+                // already on the highway don't jump; the visible scroll speed follows the song speed instead.
+                if (StreamLink.StreamLinkService.IsStreamModeActive(GameManager))
+                {
+                    return noteSpeed;
+                }
+
                 return noteSpeed / GameManager.SongSpeed;
             }
         }

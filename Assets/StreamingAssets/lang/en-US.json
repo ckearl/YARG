@@ -931,6 +931,7 @@
             "Experimental": "Experimental"
         },
         "Header": {
+            "StreamLink": "StreamLink",
             "Other": "Other",
             "Display": "Display",
             "Volume": "Volume",
@@ -1540,6 +1541,22 @@
             "PauseOnFocusLoss": {
                 "Name": "Pause On Focus Loss",
                 "Description": "Pauses the game if it tabbed out/loses focus in the middle of a song."
+            },
+            "StreamMode": {
+                "Name": "Stream Mode",
+                "Description": "Lets song speed change mid-song without the highway jumping, and turns off score and replay saving (live chart changes can't be replayed)."
+            },
+            "StreamLinkHost": {
+                "Name": "Streamer.bot Address",
+                "Description": "Address of Streamer.bot's WebSocket server. The password is set in settings.json (StreamLinkPassword)."
+            },
+            "StreamLinkPort": {
+                "Name": "Streamer.bot Port",
+                "Description": "Port of Streamer.bot's WebSocket server."
+            },
+            "StreamEffectDuration": {
+                "Name": "Default Effect Duration",
+                "Description": "How many seconds a viewer effect lasts when the command doesn't say."
             },
             "MuteOnFocusLoss": {
                 "Name": "Mute On Focus Loss",
