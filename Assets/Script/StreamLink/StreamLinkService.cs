@@ -14,8 +14,6 @@ namespace YARG.StreamLink
     /// </summary>
     public class StreamLinkService : MonoSingleton<StreamLinkService>
     {
-        private const float BANNER_SECONDS = 3f;
-
         private readonly GameplayStreamHost _host = new();
         private StreamDirector   _director;
         private StreamLinkClient _client;
@@ -24,12 +22,11 @@ namespace YARG.StreamLink
         private int    _lastTickFrame = -1;
         private double _lastTickTime;
 
-        private string _banner;
-        private float  _bannerUntil;
-        private int    _debugCommandId;
+        private int _debugCommandId;
 
         public StreamDirector Director => _director;
         public LinkStatus LinkStatus => _client?.Status ?? LinkStatus.Disconnected;
+        public bool IsInSong => _game != null;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Create()
@@ -50,8 +47,8 @@ namespace YARG.StreamLink
         protected override void SingletonAwake()
         {
             _director = new StreamDirector(_host);
-            _director.EffectApplied += OnEffectApplied;
             _lastTickTime = Time.realtimeSinceStartupAsDouble;
+            gameObject.AddComponent<StreamHud>().Initialize(this);
         }
 
         protected override void SingletonDestroy()
@@ -164,13 +161,6 @@ namespace YARG.StreamLink
             }
         }
 
-        private void OnEffectApplied(ActiveEffect effect)
-        {
-            string user = string.IsNullOrEmpty(effect.Source.User) ? "someone" : "@" + effect.Source.User;
-            _banner = $"{user} → {effect.Describe()} ({effect.DurationSeconds:0}s)";
-            _bannerUntil = Time.unscaledTime + BANNER_SECONDS;
-        }
-
         // Debug hotkeys (editor and development builds): Ctrl + F5..F12.
         // They go through the same parser and director as real commands.
         private void HandleDebugHotkeys()
@@ -199,46 +189,6 @@ namespace YARG.StreamLink
                 : $"{{\"v\":1,\"id\":\"{id}\",\"cmd\":\"apply\",\"mod\":\"{mod}\",{extra}" +
                   $"\"source\":{{\"platform\":\"test\",\"user\":\"Hotkey{++_debugCommandId}\",\"trigger\":\"debug\"}}}}";
             _director.Enqueue(StreamMessageParser.Parse(json));
-        }
-
-        // Temporary on-screen display until the proper HUD (M4): connection dot, banner and active effects
-        private GUIStyle _style;
-
-        private void OnGUI()
-        {
-            if (!SettingsManager.SettingContainer.IsInitialized || !SettingsManager.Settings.StreamMode.Value)
-            {
-                return;
-            }
-
-            _style ??= new GUIStyle(GUI.skin.label) { fontSize = 18, richText = true };
-
-            string dot = LinkStatus switch
-            {
-                LinkStatus.Connected    => "<color=#3c3>●</color>",
-                LinkStatus.AuthFailed   => "<color=#e33>●</color> auth failed",
-                LinkStatus.Disconnected => "<color=#888>●</color>",
-                _                       => "<color=#fb0>●</color> connecting",
-            };
-
-            var text = new System.Text.StringBuilder();
-            text.Append(dot).Append(" StreamLink");
-
-            if (_game != null)
-            {
-                foreach (var effect in _director.Effects.Active)
-                {
-                    text.Append($"\n  {effect.Describe()}  {effect.RemainingSeconds:0}s");
-                }
-            }
-
-            GUI.Label(new Rect(12, 12, 600, 200), text.ToString(), _style);
-
-            if (_banner != null && Time.unscaledTime < _bannerUntil)
-            {
-                var bannerStyle = new GUIStyle(_style) { fontSize = 28, alignment = TextAnchor.UpperCenter };
-                GUI.Label(new Rect(0, 60, Screen.width, 60), $"<b>{_banner}</b>", bannerStyle);
-            }
         }
     }
 }
